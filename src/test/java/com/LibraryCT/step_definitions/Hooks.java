@@ -13,21 +13,21 @@ import io.cucumber.java.*;
 
 public class Hooks {
 
-    @Before (value="@db")
+    @Before (value="@db", order = 1)
     public void setupDB(){
 
         DB_Util.createConnection("jdbc:mysql://"+ ConfigurationReader.getProperty("ip") +":3306/library2", ConfigurationReader.getProperty("dbUsername"), ConfigurationReader.getProperty("dbPassword"));
 
     }
 
-    @Before (value="@ui")
+    @Before (value="@ui", order = 0)
     public void setupUI(){
 
         Driver.getDriver().get(ConfigurationReader.getProperty("env"));
 
     }
 
-    @After
+    @After ("@ui")
     public void teardown(Scenario scenario){
 
         if (scenario.isFailed()){
@@ -37,10 +37,13 @@ public class Hooks {
 
         }
 
-
-        DB_Util.destroy();
         Driver.closeDriver();
 
+    }
+
+    @After("@db")
+    public void dbTearDown() {
+        DB_Util.destroy();
     }
 
 }
